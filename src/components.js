@@ -2,11 +2,26 @@ import React from "react";
 import { PRODUCTS } from "./mock";
 
 export default class FilterableProductTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      filterText: "",
+      inStockOnly: false
+    };
+  }
+
   render() {
     return (
       <div>
-        <SearchBar />
-        <ProductTable products={PRODUCTS} />
+        <SearchBar
+          filterText={this.state.filterText}
+          inStockOnly={this.state.inStockOnly}
+        />
+        <ProductTable
+          products={PRODUCTS}
+          filterText={this.state.filterText}
+          inStockOnly={this.state.inStockOnly}
+        />
       </div>
     );
   }
@@ -14,11 +29,15 @@ export default class FilterableProductTable extends React.Component {
 
 class SearchBar extends React.Component {
   render() {
+    const filterText = this.props.filterText;
+    const inStockOnly = this.props.inStockOnly;
+
     return (
       <form>
-        <input type="text" placeholder="Search" />
+        <input type="text" placeholder="Search" value={filterText} />
         <p>
-          <input type="checkbox" /> Only show products in stock
+          <input type="checkbox" checked={inStockOnly} /> Only show products in
+          stock
         </p>
       </form>
     );
@@ -40,9 +59,25 @@ class ProductRow extends React.Component {
   render() {
     const product = this.props.product;
 
+    const name = product.stocked ? (
+      product.name
+    ) : (
+      <span style={{ color: "red" }}>{product.name}</span>
+    );
+
+    // const name = getNameColor();
+
+    // function getNameColor() {
+    //   if (product.stocked === true) {
+    //     return product.name;
+    //   } else {
+    //     return <span style={{ color: "red" }}>{product.name}</span>;
+    //   }
+    // }
+
     return (
       <tr>
-        <td>{product.name}</td>
+        <td>{name}</td>
         <td>{product.price}</td>
       </tr>
     );
@@ -51,10 +86,19 @@ class ProductRow extends React.Component {
 
 class ProductTable extends React.Component {
   render() {
+    const filterText = this.props.filterText;
+    const inStockOnly = this.props.inStockOnly;
+
     const rows = [];
     let lastCategory = null;
 
     this.props.products.forEach(product => {
+      if (product.name.indexOf(filterText) === -1) {
+        return;
+      }
+      if (inStockOnly && !product.stocked) {
+        return;
+      }
       if (product.category !== lastCategory) {
         rows.push(
           <ProductCategoryRow
