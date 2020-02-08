@@ -8,6 +8,21 @@ export default class FilterableProductTable extends React.Component {
       filterText: "",
       inStockOnly: false
     };
+
+    this.handleFilterTextChange = this.handleFilterTextChange.bind(this);
+    this.handleInStockChange = this.handleInStockChange.bind(this);
+  }
+
+  handleFilterTextChange(filterText) {
+    this.setState({
+      filterText
+    });
+  }
+
+  handleInStockChange(inStockOnly) {
+    this.setState({
+      inStockOnly
+    });
   }
 
   render() {
@@ -16,6 +31,8 @@ export default class FilterableProductTable extends React.Component {
         <SearchBar
           filterText={this.state.filterText}
           inStockOnly={this.state.inStockOnly}
+          onFilterTextChange={this.handleFilterTextChange}
+          onInStockChange={this.handleInStockChange}
         />
         <ProductTable
           products={PRODUCTS}
@@ -28,16 +45,40 @@ export default class FilterableProductTable extends React.Component {
 }
 
 class SearchBar extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.handleFilterTextChange = this.handleFilterTextChange.bind(this);
+    this.handleInStockChange = this.handleInStockChange.bind(this);
+  }
+
+  handleFilterTextChange(event) {
+    this.props.onFilterTextChange(event.target.value);
+  }
+
+  handleInStockChange(event) {
+    this.props.onInStockChange(event.target.value);
+  }
+
   render() {
     const filterText = this.props.filterText;
     const inStockOnly = this.props.inStockOnly;
 
     return (
       <form>
-        <input type="text" placeholder="Search" value={filterText} />
+        <input
+          type="text"
+          placeholder="Search"
+          value={filterText}
+          onChange={this.handleFilterTextChange}
+        />
         <p>
-          <input type="checkbox" checked={inStockOnly} /> Only show products in
-          stock
+          <input
+            type="checkbox"
+            checked={inStockOnly}
+            onChange={this.handleInStockChange}
+          />{" "}
+          Only show products in stock
         </p>
       </form>
     );
@@ -93,7 +134,7 @@ class ProductTable extends React.Component {
     let lastCategory = null;
 
     this.props.products.forEach(product => {
-      if (product.name.indexOf(filterText) === -1) {
+      if (product.name.toLowerCase().indexOf(filterText.toLowerCase()) === -1) {
         return;
       }
       if (inStockOnly && !product.stocked) {
